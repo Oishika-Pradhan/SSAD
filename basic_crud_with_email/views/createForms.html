@@ -1,0 +1,583 @@
+<html ng-app="drag-and-drop">
+  <head lang="en">
+    <meta charset="utf-8">
+    <title>Drag and Drop: Multiple listsr</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.min.js"></script>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/ui-lightness/jquery-ui.min.css" rel="stylesheet" type="text/css" />
+  <!--  <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/css/bootstrap.min.css" rel="stylesheet">  -->
+    <!-- <script src="angular-dragdrop.min.js"></script> -->
+   <!--  <script src="./../app/createForms.js"></script> -->
+    <!-- <style>
+      .thumbnail { height: 280px !important; }
+      .btn-droppable { width: 180px; height: 30px; padding-left: 4px; }
+      .btn-draggable { width: 160px; }
+      .emage { height: 215px; }
+      #products { float:left; width: 500px;  }
+      #cart { width: 500px; float: right; margin-top: 1em; }
+      #cart ol { margin: 0; padding: 1em 0 1em 3em; }
+    </style> -->
+
+<style type="text/css">
+#customers {
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+#customers td, #customers th {
+    border: 1px solid #ddd;
+    padding: 8px;width: 60px;
+}
+
+#customers tr:nth-child(even){background-color: #f2f2f2;}
+
+#customers tr:hover {background-color: #ddd;}
+
+#customers th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color: #4CAF50;
+    color: white;
+}
+</style>
+
+
+
+
+  </head>
+  <body ng-controller="oneCtrl">
+
+
+
+<div class="container">
+     <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/">Web App</a>
+        </div>
+        
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="/my_tasks">My Tasks</a></li>
+          <li><a href="/receive">Create a Form</a></li>
+          <li><a href="/search">Search</a></li>
+
+        </ul>
+
+        
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="/logout" class="btn btn-default btn-sm">Logout</a></li>
+        </ul>
+      </div>
+    </nav> 
+
+    
+<br /><br /><br /><br /><br /><br /><br />
+    <label>Name of the Form:</label><input type = 'text' name='typename' placeholder="The name of the form you want to create" ng-model='contact.name' required>
+
+    <div id="products">
+      <h1 class="ui-widget-header">FORM ELEMENTS PRESENT</h1>
+      <div id="catalog">
+        <div>
+          <ul>
+            
+                
+            <li ng-repeat='item in list1' ng-show="item.type" data-drag="true" data-jqyoui-options="{revert: 'invalid', helper: 'clone'}" ng-model="list1" jqyoui-draggable="{index: {{$index}}, animate: true, placeholder: 'keep'}">
+             <table id = "customers">
+                   
+                <tr>
+
+                <td>
+                    {{item.type}}
+                </td>
+
+                <td> 
+                    <input type="text" ng-model="values[$index]" ng-show = 'true' name="value" placeholder="name of the text box"> 
+            </td>
+
+            <td>
+                    <input type="text" ng-model="alltypes[$index]" ng-show = 'true' name="value" placeholder="type or value of the text box"> 
+            </td>
+
+        </tr>
+
+        </table>
+            </li>
+          </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="cart">
+        <h1 class="ui-widget-header">FORM TO BE PREPARED</h1>
+        <div class="ui-widget-content">
+
+            <ol data-drop="true" ng-model='list4' jqyoui-droppable="{multiple:true}">
+                <li ng-repeat="item in list4 track by $index" ng-show="item.type" data-drag="true" data-jqyoui-options="{revert: 'valid', helper: 'clone'}" ng-model="list4" jqyoui-draggable="{index: {{$index}},animate:true}" jqyoui-draggable="{index: {{$index}}, animate: true}" onDrop="drop(item[$index].type)">   
+                <input type="text" ng-show = 'true' ng-if= " item.type  == 'text box'" ng-init="onDrop(item,0)"> 
+                <input type="radio" ng-show = 'true' ng-if= " item.type  == 'Radio button'" ng-init="onDrop(item,1)">
+                <input type="checkbox" ng-show = 'true' ng-if= " item.type  == 'Check boxes'" ng-init="onDrop(item,2)">
+                <textarea  ng-show = 'true' ng-if= " item.type  == 'Text area'" ng-init="onDrop(item,3)"></textarea>
+                </li>
+                <li class="placeholder" ng-hide="hideMe()">Add your items here</li>
+            </ol>
+
+        </div>
+    </div>
+<br />
+<br />
+<button type="submit" ng-click="dropping()" class="btn btn-warning btn-lg" ng-disabled  = "!contact"> BUTTON </button>
+ <script type="text/javascript">
+     
+$(function() {
+  $("#catalog").accordion();
+});
+var App = angular.module('drag-and-drop', ['ngDragDrop']);
+
+App.controller('oneCtrl', function($scope, $timeout,$http) {
+  var i=0;
+  var listing1 = [];
+  var listing2 = [];
+  $scope.list1 = [
+                  {'type': 'text box'},
+                  {'type': 'Radio button'},
+                  {'type': 'Check boxes'},
+                  {'type': 'Text area'}
+                ];
+  $scope.list4 = [];
+  $scope.contact = "";
+  $scope.values = [];
+  $scope.alltypes = [];
+  $scope.dropping = function(){
+    
+    /*console.log('askjfkcbakjbv');
+    console.log(i);
+    console.log($scope.list4);
+    i = i+ 1;*/
+    console.log($scope.contact);
+    console.log(listing1);
+    console.log(listing2)
+
+    var arr = [];    
+    arr[0] = $scope.list4;
+    arr[1] = $scope.contact;
+    arr[2] = listing1 //$scope.values;
+    arr[3] = listing2 //$scope.alltypes;
+
+    $http.post('/receive',arr).then(function(response) {//when successfull
+        //console.log('successfully deleted');
+        //window.location.href = "http://localhost:8080/my_tasks"
+        /*$location.path('').replace('/my_tasks');*/
+        /*render('search.html');*/
+    }, function() {//error occured
+
+    });
+
+    
+    
+  }
+  $scope.onOver = function(item) {
+    console.log(item);
+    console.log('Hello WOrld!');
+  };
+
+  $scope.onDrop = function(item,valuee){
+    
+    //console.log($scope.values[valuee]);
+    //console.log($scope.alltypes[valuee]);
+    listing1.push($scope.values[valuee]);
+    listing2.push($scope.alltypes[valuee]);
+    return true;
+    
+  }
+  $scope.hideMe = function() {
+    return $scope.list4.length > 0;
+  }
+});
+
+
+
+ </script>
+
+
+ <script>
+  
+(function(e,t,n){
+ "use strict";
+ var r=t.module("ngDragDrop",[]).service("ngDragDropService",["$timeout","$parse",function(i,s){
+         this.callEventCallback=function(e,t,n,r){
+         function f(t){
+         var n=t.indexOf("(")!==-1?t.indexOf("("):t.length,r=t.lastIndexOf(")")!==-1?t.lastIndexOf(")"):t.length,
+         i=t.substring(n+1,r),
+         o=t.match(/^[^.]+.\s*/)[0].slice(0,-1);o=e[o]&&typeof e[o].constructor==="function"?o:null;
+         return{
+callback:t.substring(o&&o.length+1||0,n),args:(i&&i.split(",")||[]).map(function(t){
+             return s(t)(e)}),constructor:o}}
+if(!t)return;
+var i=f(t),o=i.callback,u=i.constructor,a=[n,r].concat(i.args);
+e.$apply((e[o]||e[u][o]).apply(e,a))
+};
+
+
+this.invokeDrop=function(e,s,o,u){
+var a="",f="",l={},c={},h=null,p={},d={},v,m,g=null,y=s.scope(),b=e.scope();
+a=e.ngattr("ng-model");
+f=s.ngattr("ng-model");
+v=b.$eval(a);
+m=y.$eval(f);g=s.find("[jqyoui-draggable]:last");
+c=y.$eval(s.attr("jqyoui-droppable"))||[];
+l=b.$eval(e.attr("jqyoui-draggable"))||[];
+l.index=this.fixIndex(b,l,v);
+c.index=this.fixIndex(y,c,m);
+h=t.isArray(v)?l.index:null;
+p=t.isArray(v)?v[h]:v;
+if(t.isArray(m)&&c&&c.index!==n){d=m[c.index]}else if(!t.isArray(m)){d=m}else{d={}}if(l.animate===true){this.move(e,g.length>0?g:s,null,"fast",c,null);
+    this.move(g.length>0&&!c.multiple?g:[],e.parent("[jqyoui-droppable]"),r.startXY,"fast",c,function(){i(function(){e.css({position:"relative",left:"",top:""});
+                g.css({position:"relative",left:"",top:"",display:""});
+                this.mutateDraggable(b,c,l,a,f,d,e);
+                this.mutateDroppable(y,c,l,f,p,h);
+                this.callEventCallback(y,c.onDrop,o,u)}.bind(this))}.bind(this))}
+else{
+    i(function(){
+            this.mutateDraggable(b,c,l,a,f,d,e);
+            this.mutateDroppable(y,c,l,f,p,h);
+            this.callEventCallback(y,c.onDrop,o,u)}.bind(this))}};
+
+this.move=function(t,r,i,s,o,u){
+    if(t.length===0){
+        if(u)
+        {
+            e.setTimeout(function(){u()},300)
+        }
+        return false
+    }
+    var a=9999,f=t.offset(),l=r&&r.is(":visible"),c=r.hasClass("ng-hide");
+    if(i===null&&r.length>0){
+        if(r.attr("jqyoui-draggable")!==n&&r.ngattr("ng-model")!==n&&r.is(":visible")&&o&&o.multiple){i=r.offset();
+            if(o.stack===false){
+                i.left+=r.outerWidth(true)
+            }
+            else{
+                i.top+=r.outerHeight(true)
+            }
+        }
+        else{
+            if(c)r.removeClass("ng-hide");
+            i=r.css({visibility:"hidden",display:"block"}).offset();r.css({visibility:"",display:l?"block":"none"})}
+    }
+    t.css({position:"absolute","z-index":a}).css(f).animate(i,s,function(){
+            if(c)r.addClass("ng-hide");
+            if(u)u()})
+};
+
+this.mutateDroppable=function(e,n,r,i,o,u){
+    var a=e.$eval(i);e.dndDragItem=o;
+    if(t.isArray(a)){
+        if(n&&n.index>=0){a[n.index]=o}
+        else{a.push(o)}
+        if(r&&r.placeholder===true){
+            a[a.length-1]["jqyoui_pos"]=u
+        }
+    }
+    else{
+        s(i+" = dndDragItem")(e);
+        if(r&&r.placeholder===true){
+            a["jqyoui_pos"]=u}
+    }
+};
+
+this.mutateDraggable=function(e,r,i,o,u,a,f){
+    var l=t.equals(t.copy(a),{}),c=e.$eval(o);e.dndDropItem=a;
+    if(i&&i.placeholder){
+        if(i.placeholder!="keep"){
+            if(t.isArray(c)&&i.index!==n){
+                c[i.index]=a
+            }
+            else{
+                s(o+" = dndDropItem")(e)
+            }
+        }
+    }
+    else{
+        if(t.isArray(c)){
+            if(l){
+                if(i&&i.placeholder!==true&&i.placeholder!=="keep"){
+                    c.splice(i.index,1)
+                }
+            }
+            else{
+                c[i.index]=a
+            }
+        }
+        else{
+            s(o+" = dndDropItem")(e);
+            if(e.$parent){
+                s(o+" = dndDropItem")(e.$parent)
+            }
+        }
+    }
+    f.css({"z-index":"",left:"",top:""})};
+
+this.fixIndex=function(e,r,i){
+    if(r.applyFilter&&t.isArray(i)&&i.length>0)
+    {
+        var s=e[r.applyFilter](),o=s[r.index],u=n;i.forEach(function(e,n){
+                if(t.equals(e,o)){u=n}
+                });
+        return u
+    }
+    return r.index}}]).directive("jqyouiDraggable",["ngDragDropService",function(e){
+        return{require:"?jqyouiDroppable",restrict:"A",link:function(n,i,s){
+        var o,u;
+        var a=function(a,f){
+        if(a)
+        {
+        o=n.$eval(i.attr("jqyoui-draggable"))||[];
+        i.draggable({disabled:false}).draggable(n.$eval(s.jqyouiOptions)||{}).draggable({
+start:function(i,s){
+u=t.element(this).css("z-index");
+t.element(this).css("z-index",99999);
+r.startXY=t.element(this).offset();
+e.callEventCallback(n,o.onStart,i,s)
+},
+stop:function(r,i){
+t.element(this).css("z-index",u);
+e.callEventCallback(n,o.onStop,r,i)},drag:function(t,r){
+e.callEventCallback(n,o.onDrag,t,r)
+}
+})
+        }
+else
+{
+    i.draggable({disabled:true})
+}
+};
+n.$watch(function(){
+        return n.$eval(s.drag)
+        },a);a()
+}
+}
+}]).directive("jqyouiDroppable",["ngDragDropService",function(e){
+    return{
+restrict:"A",priority:1,link:function(n,r,i){
+var s=function(s,o){
+if(s){
+r.droppable({disabled:false}).droppable(n.$eval(i.jqyouiOptions)||{}).droppable({over:function(r,i){var s=n.$eval(t.element(this).attr("jqyoui-droppable"))||[];e.callEventCallback(n,s.onOver,r,i)},out:function(r,i){var s=n.$eval(t.element(this).attr("jqyoui-droppable"))||[];e.callEventCallback(n,s.onOut,r,i)},drop:function(r,s){if(t.element(s.draggable).ngattr("ng-model")&&i.ngModel){e.invokeDrop(t.element(s.draggable),t.element(this),r,s)}else{e.callEventCallback(n,(n.$eval(t.element(this).attr("jqyoui-droppable"))||[]).onDrop,r,s)}}})}else{r.droppable({disabled:true})}};n.$watch(function(){return n.$eval(i.drop)},s);s()}}}]);$.fn.ngattr=function(e,n){var r=t.element(this).get(0);return r.getAttribute(e)||r.getAttribute("data-"+e)}})(window,window.angular)
+
+
+
+ </script>
+ </body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- <!doctype html>
+<html>
+ --><!-- <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.6/angular.min.js"></script>  -->
+<!-- <head>
+    <title>Web App</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> 
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> 
+    <style>
+        body        { padding-top:80px; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+<div class="col-sm-6 col-sm-offset-3">
+
+    <h1><span class="fa fa-sign-in"></span> Create Form </h1>
+
+    show any messages that come back with authentication
+   
+        <form action="/receive" method="post">
+        
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" class="form-control" name="email">
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" class="form-control" name="password">
+        </div>
+
+        <button type="submit" class="btn btn-warning btn-lg">Create</button>
+    </form>
+
+    <hr>
+
+
+</div>
+
+</div>
+</body>
+</html>
+ -->
+
+<!-- <HEAD>
+
+<style>
+#div1 {
+    width: 350px;
+    height: 350px;
+    padding: 10px;
+    border: 1px solid #aaaaaa;
+}
+</style>
+
+
+<TITLE>Dynamically add Textbox, Radio, Button in html Form using JavaScript</TITLE>
+ --><!-- <SCRIPT language="javascript">
+    app = angular.module('Myapp',[]);
+
+    app.controller('MyCtrl', ['$scope','$http','$location', function($scope,$http,$location) {
+    }]);
+var array = [];
+function add(type) {
+
+    //Create an input type dynamically.
+    console.log(type);
+    console.log('######################');
+    var element = document.createElement("input");
+
+    //Assign different attributes to the element.
+    element.setAttribute("type", type);
+    element.setAttribute("value", type);
+    element.setAttribute("name", type);
+
+
+    var foo = document.getElementById("fooBar");
+    //console.log('#######################');
+    //var array = [];
+    //var foot = document.getElementById("fooBar").innerHTML;
+    //console.log(foot);
+    //array.push(element);
+    //console.log(array.length);
+    //console.log(array[0])
+    //console.log('#######################');
+    //Append the element in page (in span).
+
+    foo.appendChild(element);
+    //var foot = document.getElementById("fooBar").innerHTML;
+    //console.log(foot);
+}
+
+function allowDrop(ev) {
+    ev.preventDefault();
+}
+
+function drag(ev) {
+    ev.dataTransfer.setData("text", ev.target.id);
+    //ev.dataTransfer.setData("button", ev.target.id);
+}
+
+function drop(ev) {
+    ev.preventDefault();
+    var data = ev.dataTransfer.getData("text");
+    console.log(document.getElementById(data));
+    //var data_a = ev.dataTransfer.getData("button");
+    ev.target.appendChild(document.getElementById(data));
+    //ev.target.appendChild(document.getElementById(data_a)); 
+    //var footer = document.getElementById("div1").innerHTML;
+    //console.log(footer);
+    //console.log(document.forms[1].value);
+
+}
+
+ </SCRIPT>
+ --><!-- </HEAD>
+<BODY ng-app="Myapp">
+<FORM>
+<H2>Dynamically add element in form.</H2>
+Select the element and hit Add to add it in form.
+<BR/>
+ 
+<SELECT name="element">
+    <OPTION value="button">Button</OPTION>
+    <OPTION value="text">Textbox</OPTION>
+    <OPTION value="radio">Radio</OPTION>
+</SELECT>
+
+<INPUT type="button" value="Add" onclick="add(document.forms[0].element.value)"/>
+<br><br>
+<span id="fooBar">  </span>
+
+<div id="div1" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+</FORM>
+ -->   <!--
+<input type="text" id="drag1" value='name' value="name" draggable="true" ondragstart="drag(event)">
+<input type="radio" id="drag2" value='name' value="name" draggable="true" ondragstart="drag(event)">
+<input type="text" id="drag3" value='name' value="name" draggable="true" ondragstart="drag(event)">
+<textarea name="name" value="name" id="drag4" draggable="true" ondragstart="drag(event)"></textarea>
+-->
+<!-- <p id="drag2" value="{{ btn }}" draggable="true" ondragstart="drag(event)">radio</p>
+<form>
+    <div ng-repeat="btn in ['text','radio','button','textarea']" ng-controller="MyCtrl">    
+    <p id="drag{{ btn }}" value="{{ btn }}" draggable="true" ondragstart="drag(event)">{{ btn }}</p>
+<p id="drag3" value="{{ btn }}" draggable="true" ondragstart="drag(event)">button</p>
+<p id="drag4" value="{{ btn }}" draggable="true" ondragstart="drag(event)">textarea</p>
+ --><!-- </div>
+</form>
+</BODY>
+</HTML>

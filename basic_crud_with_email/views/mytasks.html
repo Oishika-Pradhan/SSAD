@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+<head>
+    <title>Web App</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.6/angular.min.js"></script>
+    <style>
+        body        { padding-top:80px; word-wrap:break-word; }
+    </style>
+</head>
+<body ng-app="users">
+<div class="container" ng-controller="userctrl">
+     <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/">Web App</a>
+        </div>
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="/my_tasks">My Tasks</a></li>
+          <li><a href="/receive">Create a Form</a></li>
+          <li><a href="/search">Search</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="/logout" class="btn btn-default btn-sm">Logout</a></li>
+        </ul>
+      </div>
+    </nav>
+
+
+
+     <form action="/updateuser" method="post">
+        <div class="form-group">
+            <label>Email</label>
+            <input type="text" class="form-control" name="email" value = "{{update_email}}">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" class="form-control" name="password">
+        </div>
+
+        <button type="submit" class="btn btn-warning btn-lg">Edit</button>
+    </form>
+
+   
+    <table class="table">
+        <thead>
+            <tr>
+            <td>USER</td>
+            <td>ADMIN_STATUS</td>
+          </tr>
+        </thead>
+
+        <tbody>
+      <% for(var i=0; i<allusers.length; i++) {%>
+      <tr>
+      <td><%= allusers[i].email %></td> 
+      <td><%= allusers[i].isAdmin %></td>
+       
+      <td><button class="btn btn-warning" ng-click="update('<%= allusers[i]._id %>','<%= allusers[i].email %>','<%= allusers[i].password %>','<%= allusers[i].isAdmin %>')">UPDATE</button></td> 
+      <td><button class="btn btn-danger" ng-click="remove('<%= allusers[i]._id %>')">DELETE</button></td>
+      <% if ( allusers[i].isAdmin  == false) { %><td><button class="btn btn-warning" ng-click="make('<%= allusers[i]._id %>')">MAKE AN ADMIN</button></td> <% } %>
+       <% if ( allusers[i].isAdmin  == true) { %><td><button class="btn btn-danger" ng-click="unmake('<%= allusers[i]._id %>')">REMOVE AS ADMIN</button></td> <% } %>
+        </tr><% } %>
+        </tbody>
+        </table> 
+
+
+</div>
+
+<script type="text/javascript">
+
+app = angular.module('users',[]);
+app.controller('userctrl', ['$scope','$http','$location', function($scope,$http,$location) {
+//    console.log("Thank god its here!");
+
+$scope.remove = function(id) {
+//console.log('Thank god its here too!!');
+ var details = {
+            _id: id , 
+           }
+console.log(id);
+    $http.post('/deleteuser',details).then(function(response) {//when successfull
+        //console.log('successfully deleted');
+        window.location.href = "http://localhost:8080/my_tasks"
+        /*$location.path('').replace('/my_tasks');*/
+        /*render('search.html');*/
+    }, function() {//error occured
+
+    });
+
+}
+
+
+$scope.make = function(id) {
+//console.log('Thank god its here too in make!!');
+ var details = {
+            _id: id , 
+           }
+console.log(id);
+    $http.post('/makeadmin',details).then(function(response) {//when successfull
+   //     console.log('successfully got back');
+        window.location.href = "http://localhost:8080/my_tasks"
+        /*$location.path('').replace('/my_tasks');*/
+        /*render('search.html');*/
+    }, function() {//error occured
+
+    });
+
+}
+
+$scope.unmake = function(id) {
+//console.log('Thank god its here too in make!!');
+ var details = {
+            _id: id , 
+           }
+console.log(id);
+    $http.post('/unmakeadmin',details).then(function(response) {//when successfull
+  //      console.log('successfully got back');
+        window.location.href = "http://localhost:8080/my_tasks"
+        //$location.redirect('/');
+            }, function() {//error occured
+
+    });
+
+}
+
+
+$scope.update = function(id,email,password,isAdmin) {
+console.log('Thank god its here tsssoo!!');
+ var details = {
+            _id: id , 
+            email: email,
+            password: password,
+            isAdmin: isAdmin
+           }
+//console.log(details);
+$scope.update_email = email;
+/*$scope.update_password = password;
+*//*
+    $http.post('/updateuser',details).then(function(response) {//when successfull
+        console.log('successfully updated');
+        $location.path('').replace('/my_tasks');
+        }, function() {//error occured
+
+    });*/
+
+}
+
+
+}]);    
+
+
+
+</script>
+
+
+
+</body>
+</html>
+
